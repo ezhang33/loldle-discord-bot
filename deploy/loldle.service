@@ -1,0 +1,24 @@
+[Unit]
+Description=LoLdle Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=loldle
+Group=loldle
+WorkingDirectory=/opt/loldle-discord-bot
+EnvironmentFile=/etc/loldle.env
+ExecStart=/usr/bin/node src/bot.js
+Restart=always
+RestartSec=5
+
+# Hardening: the bot only needs to read its code and write its database.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/loldle
+
+[Install]
+WantedBy=multi-user.target

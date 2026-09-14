@@ -52,6 +52,21 @@ Requires Node.js 22.13 or newer.
 
 See `.env.example` for the optional settings (`TIMEZONE`, `DB_PATH`, `DAILY_SEED`, `OWNER_ID`).
 
+## Hosting
+
+Runs happily on a free-tier VM (GCP `e2-micro`, ~80 MB RAM used). On a fresh
+Ubuntu 24.04 host:
+
+```bash
+git clone https://github.com/ezhang33/loldle-discord-bot.git /tmp/loldle
+sudo bash /tmp/loldle/deploy/setup.sh   # Node 22, service user, systemd unit, nightly DB backup
+sudo nano /etc/loldle.env               # fill in DISCORD_TOKEN, CLIENT_ID, OWNER_ID
+sudo systemctl start loldle && journalctl -u loldle -f
+```
+
+Update later with `sudo bash /opt/loldle-discord-bot/deploy/update.sh`. The
+database lives in `/var/lib/loldle/`, with dated backups in `backups/`.
+
 ## Development
 
 ```bash
