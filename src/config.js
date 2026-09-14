@@ -17,7 +17,7 @@ module.exports = {
     token: required("DISCORD_TOKEN"),
     clientId: required("CLIENT_ID"),
     guildId: process.env.GUILD_ID || null,
-    timezone: process.env.TIMEZONE || "America/New_York",
+    timezone: process.env.TIMEZONE || "America/Los_Angeles",
     dbPath: process.env.DB_PATH || path.resolve(process.cwd(), "data", "loldle.sqlite"),
     seed: process.env.DAILY_SEED || "loldle-discord-bot",
     ownerId: process.env.OWNER_ID || null,

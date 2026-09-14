@@ -6,7 +6,7 @@ competes on a leaderboard — like the Wordle app, but for League.
 
 ## How it works
 
-- One champion per server per day, rolling over at midnight (Eastern by default).
+- One champion per server per day, rolling over at midnight (Pacific by default).
 - `/guess <champion>` — your guess and the colored attribute clues are shown
   only to you. When you solve it (or give up) the channel gets a spoiler-free
   announcement with your emoji grid.

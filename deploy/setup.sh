@@ -33,7 +33,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
 DISCORD_TOKEN=
 CLIENT_ID=
 OWNER_ID=
-TIMEZONE=America/New_York
+TIMEZONE=America/Los_Angeles
 DB_PATH=$DATA_DIR/loldle.sqlite
 DAILY_SEED=$(head -c 24 /dev/urandom | base64)
 EOF

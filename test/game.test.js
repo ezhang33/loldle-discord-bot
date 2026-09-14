@@ -40,14 +40,14 @@ test("compare marks exact, partial, and year direction", () => {
 });
 
 test("day keys respect the time zone and roll over at local midnight", () => {
-    // 03:30 UTC on Jan 2 is still Jan 1 in New York.
+    // 03:30 UTC on Jan 2 is still Jan 1 in Los Angeles.
     const t = new Date("2026-01-02T03:30:00Z");
-    assert.equal(dayKey("America/New_York", t), "2026-01-01");
+    assert.equal(dayKey("America/Los_Angeles", t), "2026-01-01");
     assert.equal(dayKey("UTC", t), "2026-01-02");
     assert.equal(previousDay("2026-03-01"), "2026-02-28");
     assert.deepEqual(recentDays("UTC", 3, t), ["2026-01-02", "2026-01-01", "2025-12-31"]);
-    // 03:30 UTC -> local 22:30 EST, so 1.5h until midnight.
-    assert.equal(Math.round(msUntilNextDay("America/New_York", t) / 60000), 90);
+    // 03:30 UTC -> local 19:30 PST, so 4.5h until midnight.
+    assert.equal(Math.round(msUntilNextDay("America/Los_Angeles", t) / 60000), 270);
 });
 
 test("daily pick is deterministic and varies by guild and day", () => {
