@@ -1,0 +1,75 @@
+# LoLdle Discord Bot
+
+A shared daily [LoLdle](https://loldle.net) for your Discord server. Everyone
+gets the same League of Legends champion each day, guesses privately, and
+competes on a leaderboard — like the Wordle app, but for League.
+
+## How it works
+
+- One champion per server per day, rolling over at midnight (Eastern by default).
+- `/guess <champion>` — your guess and the colored attribute clues are shown
+  only to you. When you solve it (or give up) the channel gets a spoiler-free
+  announcement with your emoji grid.
+- `/giveup` — reveals the answer to you; counts as a miss for the day.
+- `/leaderboard [today|week|alltime]` — today ranks by fewest guesses, ties
+  broken by time from first guess to solve. Week and all-time rank by solves,
+  then average guesses.
+- `/stats [player]` — solve rate, averages, streaks, guess distribution.
+- `/help`, `/ping`.
+
+Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
+🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.
+
+Results are stored in a SQLite database (Node's built-in `node:sqlite`), so
+nothing is lost on restart.
+
+## Setup
+
+Requires Node.js 22.13 or newer.
+
+1. Create an application at the [Discord Developer Portal](https://discord.com/developers/applications).
+   On the **Bot** tab create the bot and copy its token. On **General
+   Information** copy the Application ID.
+2. Invite the bot: **OAuth2 → URL Generator**, scopes `bot` and
+   `applications.commands`, bot permissions **View Channels** and **Send
+   Messages**. Open the generated URL and pick your server.
+3. Configure and run:
+
+   ```bash
+   git clone https://github.com/ezhang33/loldle-discord-bot.git
+   cd loldle-discord-bot
+   npm install
+   cp .env.example .env   # fill in DISCORD_TOKEN and CLIENT_ID
+   npm start
+   ```
+
+   Set `GUILD_ID` in `.env` while testing so slash commands appear in that
+   server instantly. Leave it empty for global registration once you're happy
+   (global commands can take up to an hour to show up the first time; remove
+   the guild-scoped ones from Server Settings → Integrations if you see
+   duplicates).
+
+See `.env.example` for the optional settings (`TIMEZONE`, `DB_PATH`, `DAILY_SEED`).
+
+## Development
+
+```bash
+npm test
+```
+
+Layout:
+
+- `src/champions.js` — champion data, lookup/autocomplete, clue comparison
+- `src/daily.js` — day keys, rollover timing, deterministic daily pick
+- `src/game.js` — rules and ranking (no Discord code)
+- `src/db.js` — SQLite storage
+- `src/commands/`, `src/events/` — the Discord layer
+
+`championData.json` is inherited from the original project and currently
+stops at 2022 releases; refreshing it is a known follow-up.
+
+## Credits
+
+Forked from [Peter DeVries' Discord-LoLdle-Bot](https://github.com/Peter-DeVries/Discord-LoLdle-Bot)
+(MIT), which provided the champion data and clue-comparison logic. LoLdle is by
+[loldle.net](https://loldle.net). Not affiliated with Riot Games.

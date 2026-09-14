@@ -1,0 +1,18 @@
+{
+  "name": "loldle-discord-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A shared daily LoLdle (League of Legends champion guessing game) with leaderboards for your Discord server",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.27.0"
+  }
+}
