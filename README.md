@@ -16,6 +16,7 @@ competes on a leaderboard — like the Wordle app, but for League.
   then average guesses.
 - `/stats [player]` — solve rate, averages, streaks, guess distribution.
 - `/help`, `/ping`.
+- `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
 🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.
@@ -49,7 +50,7 @@ Requires Node.js 22.13 or newer.
    the guild-scoped ones from Server Settings → Integrations if you see
    duplicates).
 
-See `.env.example` for the optional settings (`TIMEZONE`, `DB_PATH`, `DAILY_SEED`).
+See `.env.example` for the optional settings (`TIMEZONE`, `DB_PATH`, `DAILY_SEED`, `OWNER_ID`).
 
 ## Development
 

@@ -20,4 +20,5 @@ module.exports = {
     timezone: process.env.TIMEZONE || "America/New_York",
     dbPath: process.env.DB_PATH || path.resolve(process.cwd(), "data", "loldle.sqlite"),
     seed: process.env.DAILY_SEED || "loldle-discord-bot",
+    ownerId: process.env.OWNER_ID || null,
 };
