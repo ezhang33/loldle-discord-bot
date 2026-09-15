@@ -18,5 +18,11 @@ module.exports = {
             console.error("Failed to register slash commands:", error);
         }
         console.log(`Daily puzzle rolls over at midnight ${client.config.timezone}; database at ${client.config.dbPath}`);
+        const chat = client.config.chat;
+        console.log(
+            chat
+                ? `Chatbot "${chat.name}" enabled: ${chat.model} via ${chat.apiUrl}${chat.images ? " (images on)" : ""}`
+                : "Chatbot disabled (set CHAT_API_KEY to enable)"
+        );
     },
 };

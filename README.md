@@ -16,6 +16,12 @@ competes on a leaderboard — like the Wordle app, but for League.
   then average guesses.
 - `/stats [player]` — solve rate, averages, streaks, guess distribution.
 - `/help`, `/ping`.
+- **@mention chatbot** — ping the bot (or reply to it) and it answers in a
+  Faker persona, with the last few channel messages as context and any
+  attached images if the model supports vision. Off unless `CHAT_API_KEY` is
+  set; talks to any OpenAI-compatible endpoint (default: the Relace gateway
+  with `z-ai/glm-5.3-flash`). Requires the **Message Content Intent** toggled
+  on in the Developer Portal. Per-user and daily caps are configurable.
 - `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.

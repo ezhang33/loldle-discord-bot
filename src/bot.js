@@ -4,7 +4,11 @@ const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const config = require("./config");
 const { open } = require("./db");
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Message intents are only needed for the @mention chatbot; without it the
+// bot runs slash-commands-only and never reads channel messages.
+const intents = [GatewayIntentBits.Guilds];
+if (config.chat) intents.push(GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent);
+const client = new Client({ intents });
 client.config = config;
 client.db = open(config.dbPath);
 client.commands = new Collection();

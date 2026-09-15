@@ -36,6 +36,8 @@ OWNER_ID=
 TIMEZONE=America/Los_Angeles
 DB_PATH=$DATA_DIR/loldle.sqlite
 DAILY_SEED=$(head -c 24 /dev/urandom | base64)
+# Optional chatbot: set CHAT_API_KEY (and toggle Message Content Intent) to enable.
+CHAT_API_KEY=
 EOF
     echo ">> Fill in $ENV_FILE before starting the service."
 fi
