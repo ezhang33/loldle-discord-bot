@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const { todaysAnswer, history } = require("../game");
-const { historyLines, finishedRecap, nextPuzzleIn, plural, announce } = require("../format");
+const { historyLines, answerSummary, finishedRecap, nextPuzzleIn, plural, announce } = require("../format");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,7 +32,7 @@ module.exports = {
         const entries = history(client, guildId, day, userId, answer);
         await interaction.reply({
             content:
-                `🏳️ You gave up after **${game.guesses}** ${plural(game.guesses, "guess", "guesses")}. The answer was **${answer.name}**.\n\n` +
+                `🏳️ You gave up after **${game.guesses}** ${plural(game.guesses, "guess", "guesses")}. The answer was **${answer.name}**.\n${answerSummary(answer)}\n\n` +
                 `${historyLines(entries)}\n\n${nextPuzzleIn(client.config.timezone)}`,
             flags: MessageFlags.Ephemeral,
         });

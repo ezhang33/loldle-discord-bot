@@ -1,5 +1,5 @@
 // Message text shared by several commands.
-const { LEGEND } = require("./champions");
+const { LEGEND, compare } = require("./champions");
 const { msUntilNextDay, formatDuration } = require("./daily");
 
 function nextPuzzleIn(timezone) {
@@ -16,13 +16,20 @@ function breakdown(comparison) {
     return comparison.map((c) => `${c.mark} ${c.label}: ${c.value}`).join("\n");
 }
 
+// The answer's attributes, one per line, shown once the answer is revealed.
+function answerSummary(answer) {
+    return compare(answer, answer)
+        .map((c) => `${c.label}: ${c.value}`)
+        .join("\n");
+}
+
 // Recap shown to a player who has already finished today.
 function finishedRecap(game, answer, entries, timezone) {
     const head =
         game.status === "solved"
             ? `You already solved today's LoLdle in **${game.guesses}** ${plural(game.guesses, "guess", "guesses")} (${formatDuration(game.finished_at - game.started_at)}).`
             : `You gave up on today's LoLdle after **${game.guesses}** ${plural(game.guesses, "guess", "guesses")}.`;
-    return `${head}\nThe answer was **${answer.name}**.\n\n${historyLines(entries)}\n\n${nextPuzzleIn(timezone)}`;
+    return `${head}\nThe answer was **${answer.name}**.\n${answerSummary(answer)}\n\n${historyLines(entries)}\n\n${nextPuzzleIn(timezone)}`;
 }
 
 // Spoiler-free grid for the public channel, Wordle-share style.
@@ -44,4 +51,4 @@ function plural(n, one, many) {
     return n === 1 ? one : many;
 }
 
-module.exports = { nextPuzzleIn, historyLines, breakdown, finishedRecap, shareGrid, announce, plural };
+module.exports = { nextPuzzleIn, historyLines, breakdown, answerSummary, finishedRecap, shareGrid, announce, plural };

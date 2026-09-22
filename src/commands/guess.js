@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const { find, search, compare, LEGEND } = require("../champions");
 const { todaysAnswer, history } = require("../game");
 const { formatDuration } = require("../daily");
-const { historyLines, breakdown, finishedRecap, shareGrid, nextPuzzleIn, plural, announce } = require("../format");
+const { historyLines, breakdown, answerSummary, finishedRecap, shareGrid, nextPuzzleIn, plural, announce } = require("../format");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -61,7 +61,7 @@ module.exports = {
             const elapsed = formatDuration(now - game.started_at);
             await interaction.reply({
                 content:
-                    `🎉 You solved today's LoLdle in **${n}** ${plural(n, "guess", "guesses")} (${elapsed})! The answer was **${answer.name}**.\n\n` +
+                    `🎉 You solved today's LoLdle in **${n}** ${plural(n, "guess", "guesses")} (${elapsed})! The answer was **${answer.name}**.\n${answerSummary(answer)}\n\n` +
                     `${historyLines(entries)}\n\nCheck \`/leaderboard\` to see how you rank. ${nextPuzzleIn(client.config.timezone)}`,
                 flags: MessageFlags.Ephemeral,
             });
