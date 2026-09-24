@@ -42,14 +42,27 @@ CREATE TABLE IF NOT EXISTS neeko_log (
     actor_id    TEXT    NOT NULL,
     target_id   TEXT    NOT NULL,
     content     TEXT    NOT NULL,
-    created_at  INTEGER NOT NULL
+    created_at  INTEGER NOT NULL,
+    revealed_at INTEGER
 );
 `;
+
+// Columns added after the table first shipped; ALTER is a no-op when present.
+const MIGRATIONS = [
+    "ALTER TABLE neeko_log ADD COLUMN revealed_at INTEGER",
+];
 
 function open(dbPath) {
     if (dbPath !== ":memory:") fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     const db = new DatabaseSync(dbPath);
     db.exec(SCHEMA);
+    for (const sql of MIGRATIONS) {
+        try {
+            db.exec(sql);
+        } catch (error) {
+            if (!/duplicate column/.test(error.message)) throw error;
+        }
+    }
 
     const stmts = {
         getAnswer: db.prepare("SELECT champion FROM daily_answers WHERE guild_id = ? AND day = ?"),
@@ -69,6 +82,7 @@ function open(dbPath) {
         neekoLastByActor: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? AND actor_id = ? ORDER BY created_at DESC LIMIT 1"),
         neekoRecent: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? ORDER BY created_at DESC LIMIT ?"),
         deleteNeeko: db.prepare("DELETE FROM neeko_log WHERE message_id = ?"),
+        markNeekoRevealed: db.prepare("UPDATE neeko_log SET revealed_at = ? WHERE message_id = ? AND revealed_at IS NULL"),
     };
 
     return {
@@ -125,6 +139,9 @@ function open(dbPath) {
         },
         deleteNeeko(messageId) {
             stmts.deleteNeeko.run(messageId);
+        },
+        markNeekoRevealed(messageId, now) {
+            stmts.markNeekoRevealed.run(now, messageId);
         },
         close() {
             db.close();

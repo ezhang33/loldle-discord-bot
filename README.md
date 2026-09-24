@@ -26,8 +26,8 @@ competes on a leaderboard — like the Wordle app, but for League.
 - `/neeko as <user> <message>` — post a message wearing another member's name
   and avatar (through a channel webhook; Discord still shows an APP badge).
   Open to everyone: no pings, every use logged.
-  `/neeko undo` deletes your last one, `/neeko reveal <message id>` unmasks
-  one publicly, `/neeko log` (owner only) lists recent activity. Needs the
+  `/neeko undo` deletes your last one; react 🦎 to a message (or use
+  `/neeko reveal <message id>`) to unmask it publicly; `/neeko log` (owner only) lists recent activity. Needs the
   **Manage Webhooks** permission.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.

@@ -21,7 +21,7 @@ module.exports = {
                         "`/giveup` — reveal the answer; counts as a miss for the day",
                         "`/leaderboard [period]` — today, last 7 days, or all time",
                         "`/stats [player]` — averages, streaks, and guess distribution",
-                        "`/neeko as <user> <message>` — shapeshift: post as another member (`/neeko undo`, `/neeko reveal`)",
+                        "`/neeko as <user> <message>` — shapeshift: post as another member (`/neeko undo` to delete; react 🦎 to unmask)",
                     ].join("\n"),
                 },
                 {

@@ -6,6 +6,11 @@ const { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, ChannelType } = 
 
 const WEBHOOK_NAME = "Neeko";
 const MAX_LENGTH = 500;
+const REVEAL_EMOJI = "🦎";
+
+function revealLine(row) {
+    return `Sho'ma! Disguise broken — that was <@${row.actor_id}>, not <@${row.target_id}>.`;
+}
 
 async function getWebhook(channel, client) {
     // Threads post through their parent channel's webhook.
@@ -32,7 +37,7 @@ module.exports = {
         .addSubcommand((sub) =>
             sub
                 .setName("reveal")
-                .setDescription("Who really sent a /neeko message?")
+                .setDescription(`Who really sent a /neeko message? (or just react ${REVEAL_EMOJI} to it)`)
                 .addStringOption((o) => o.setName("message_id").setDescription("Right-click the message > Copy Message ID").setRequired(true))
         )
         .addSubcommand((sub) => sub.setName("log").setDescription("Owner only: recent /neeko activity")),
@@ -95,7 +100,7 @@ async function post(interaction, client) {
             createdAt: now,
         });
         console.log(`/neeko by ${actor.username} as ${target.user.username} in #${channel.name}: ${raw}`);
-        await interaction.editReply("Shapeshifted. (`/neeko undo` to take it back)");
+        await interaction.editReply(`Shapeshifted. (\`/neeko undo\` to take it back · anyone can react ${REVEAL_EMOJI} to unmask you)`);
     } catch (error) {
         console.error("/neeko failed:", error);
         await interaction.editReply("The disguise slipped. Couldn't post that.");
@@ -123,11 +128,11 @@ async function reveal(interaction, client) {
     if (!row) {
         return interaction.reply({ content: "That isn't a /neeko message (or it was undone).", flags: MessageFlags.Ephemeral });
     }
-    await interaction.reply({
-        content: `That was <@${row.actor_id}> wearing <@${row.target_id}>'s face.`,
-        allowedMentions: { parse: [] },
-    });
+    await interaction.reply({ content: revealLine(row), allowedMentions: { parse: [] } });
 }
+
+module.exports.REVEAL_EMOJI = REVEAL_EMOJI;
+module.exports.revealLine = revealLine;
 
 async function log(interaction, client) {
     if (!client.config.ownerId || interaction.user.id !== client.config.ownerId) {

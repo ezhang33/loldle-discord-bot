@@ -1,14 +1,15 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { Client, Collection, GatewayIntentBits } = require("discord.js");
+const { Client, Collection, GatewayIntentBits, Partials } = require("discord.js");
 const config = require("./config");
 const { open } = require("./db");
 
 // Message intents are only needed for the @mention chatbot; without it the
 // bot runs slash-commands-only and never reads channel messages.
-const intents = [GatewayIntentBits.Guilds];
+// Reactions (for the 🦎 /neeko reveal) arrive for uncached messages too, hence the partials.
+const intents = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions];
 if (config.chat) intents.push(GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent);
-const client = new Client({ intents });
+const client = new Client({ intents, partials: [Partials.Message, Partials.Reaction] });
 client.config = config;
 client.db = open(config.dbPath);
 client.commands = new Collection();
