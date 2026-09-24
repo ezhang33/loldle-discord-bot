@@ -66,7 +66,6 @@ function open(dbPath) {
             "INSERT INTO neeko_log (message_id, guild_id, channel_id, webhook_id, actor_id, target_id, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         ),
         neekoByMessage: db.prepare("SELECT * FROM neeko_log WHERE message_id = ?"),
-        neekoRecentByActor: db.prepare("SELECT created_at FROM neeko_log WHERE guild_id = ? AND actor_id = ? AND created_at > ?"),
         neekoLastByActor: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? AND actor_id = ? ORDER BY created_at DESC LIMIT 1"),
         neekoRecent: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? ORDER BY created_at DESC LIMIT ?"),
         deleteNeeko: db.prepare("DELETE FROM neeko_log WHERE message_id = ?"),
@@ -117,9 +116,6 @@ function open(dbPath) {
         },
         neekoByMessage(messageId) {
             return stmts.neekoByMessage.get(messageId) || null;
-        },
-        neekoCountSince(guildId, actorId, since) {
-            return stmts.neekoRecentByActor.all(guildId, actorId, since).length;
         },
         neekoLastByActor(guildId, actorId) {
             return stmts.neekoLastByActor.get(guildId, actorId) || null;

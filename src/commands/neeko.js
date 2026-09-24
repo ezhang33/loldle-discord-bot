@@ -2,10 +2,9 @@ const { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, ChannelType } = 
 
 // /neeko — post a message that looks like it came from another member, via a
 // channel webhook (Discord shows the member's name/avatar plus an APP badge).
-// Open to everyone, with a per-user cooldown and a full audit log.
+// Open to everyone, with a full audit log.
 
 const WEBHOOK_NAME = "Neeko";
-const MAX_PER_HOUR = 3;
 const MAX_LENGTH = 500;
 
 async function getWebhook(channel, client) {
@@ -75,11 +74,6 @@ async function post(interaction, client) {
     }
 
     const now = Date.now();
-    const used = client.db.neekoCountSince(guildId, actor.id, now - 3_600_000);
-    if (used >= MAX_PER_HOUR) {
-        return ephemeral(`Neeko is tired. You've shapeshifted ${MAX_PER_HOUR} times this hour; try again later.`);
-    }
-
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     try {
         const webhook = await getWebhook(channel, client);
@@ -101,7 +95,7 @@ async function post(interaction, client) {
             createdAt: now,
         });
         console.log(`/neeko by ${actor.username} as ${target.user.username} in #${channel.name}: ${raw}`);
-        await interaction.editReply(`Shapeshifted. (${MAX_PER_HOUR - used - 1} left this hour · \`/neeko undo\` to take it back)`);
+        await interaction.editReply("Shapeshifted. (`/neeko undo` to take it back)");
     } catch (error) {
         console.error("/neeko failed:", error);
         await interaction.editReply("The disguise slipped. Couldn't post that.");

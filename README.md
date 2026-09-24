@@ -25,7 +25,7 @@ competes on a leaderboard — like the Wordle app, but for League.
 - `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
 - `/neeko as <user> <message>` — post a message wearing another member's name
   and avatar (through a channel webhook; Discord still shows an APP badge).
-  Open to everyone: 3 per hour per person, no pings, every use logged.
+  Open to everyone: no pings, every use logged.
   `/neeko undo` deletes your last one, `/neeko reveal <message id>` unmasks
   one publicly, `/neeko log` (owner only) lists recent activity. Needs the
   **Manage Webhooks** permission.
