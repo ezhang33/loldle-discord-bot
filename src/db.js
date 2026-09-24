@@ -32,6 +32,18 @@ CREATE TABLE IF NOT EXISTS guesses (
     created_at INTEGER NOT NULL,
     PRIMARY KEY (guild_id, day, user_id, n)
 );
+
+-- Audit trail for /neeko (webhook impersonation), so "who posted that" is always answerable.
+CREATE TABLE IF NOT EXISTS neeko_log (
+    message_id  TEXT    PRIMARY KEY,
+    guild_id    TEXT    NOT NULL,
+    channel_id  TEXT    NOT NULL,
+    webhook_id  TEXT    NOT NULL,
+    actor_id    TEXT    NOT NULL,
+    target_id   TEXT    NOT NULL,
+    content     TEXT    NOT NULL,
+    created_at  INTEGER NOT NULL
+);
 `;
 
 function open(dbPath) {
@@ -50,6 +62,14 @@ function open(dbPath) {
         guessesFor: db.prepare("SELECT n, champion FROM guesses WHERE guild_id = ? AND day = ? AND user_id = ? ORDER BY n"),
         dayGames: db.prepare("SELECT * FROM games WHERE guild_id = ? AND day = ?"),
         userGames: db.prepare("SELECT * FROM games WHERE guild_id = ? AND user_id = ? AND status != 'playing' ORDER BY day"),
+        addNeeko: db.prepare(
+            "INSERT INTO neeko_log (message_id, guild_id, channel_id, webhook_id, actor_id, target_id, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        ),
+        neekoByMessage: db.prepare("SELECT * FROM neeko_log WHERE message_id = ?"),
+        neekoRecentByActor: db.prepare("SELECT created_at FROM neeko_log WHERE guild_id = ? AND actor_id = ? AND created_at > ?"),
+        neekoLastByActor: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? AND actor_id = ? ORDER BY created_at DESC LIMIT 1"),
+        neekoRecent: db.prepare("SELECT * FROM neeko_log WHERE guild_id = ? ORDER BY created_at DESC LIMIT ?"),
+        deleteNeeko: db.prepare("DELETE FROM neeko_log WHERE message_id = ?"),
     };
 
     return {
@@ -91,6 +111,24 @@ function open(dbPath) {
         },
         userGames(guildId, userId) {
             return stmts.userGames.all(guildId, userId);
+        },
+        logNeeko(row) {
+            stmts.addNeeko.run(row.messageId, row.guildId, row.channelId, row.webhookId, row.actorId, row.targetId, row.content, row.createdAt);
+        },
+        neekoByMessage(messageId) {
+            return stmts.neekoByMessage.get(messageId) || null;
+        },
+        neekoCountSince(guildId, actorId, since) {
+            return stmts.neekoRecentByActor.all(guildId, actorId, since).length;
+        },
+        neekoLastByActor(guildId, actorId) {
+            return stmts.neekoLastByActor.get(guildId, actorId) || null;
+        },
+        neekoRecent(guildId, limit) {
+            return stmts.neekoRecent.all(guildId, limit);
+        },
+        deleteNeeko(messageId) {
+            stmts.deleteNeeko.run(messageId);
         },
         close() {
             db.close();

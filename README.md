@@ -23,6 +23,12 @@ competes on a leaderboard — like the Wordle app, but for League.
   with `z-ai/glm-5.3-flash`). Requires the **Message Content Intent** toggled
   on in the Developer Portal. Per-user and daily caps are configurable.
 - `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
+- `/neeko as <user> <message>` — post a message wearing another member's name
+  and avatar (through a channel webhook; Discord still shows an APP badge).
+  Open to everyone: 3 per hour per person, no pings, every use logged.
+  `/neeko undo` deletes your last one, `/neeko reveal <message id>` unmasks
+  one publicly, `/neeko log` (owner only) lists recent activity. Needs the
+  **Manage Webhooks** permission.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
 🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.
@@ -38,8 +44,8 @@ Requires Node.js 22.13 or newer.
    On the **Bot** tab create the bot and copy its token. On **General
    Information** copy the Application ID.
 2. Invite the bot: **OAuth2 → URL Generator**, scopes `bot` and
-   `applications.commands`, bot permissions **View Channels** and **Send
-   Messages**. Open the generated URL and pick your server.
+   `applications.commands`, bot permissions **View Channels**, **Send
+   Messages**, and **Manage Webhooks** (for `/neeko`). Open the generated URL and pick your server.
 3. Configure and run:
 
    ```bash
