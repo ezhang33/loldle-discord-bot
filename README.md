@@ -27,7 +27,7 @@ competes on a leaderboard — like the Wordle app, but for League.
 - `/gold borrow <amount>` moves Bank into playable Gold. Bank can go negative with no borrowing limit. `/gold cashout <amount>` moves Gold back into Bank.
 - `/gold transfer <user> <amount>` sends positive Bank balance to another player. `/gold adjust <user> <amount> <reason>` is owner-only and changes a player's Bank (negative amounts subtract).
 - `/gold leaderboard` ranks Bank plus playable Gold.
-- `/dice <bet> <mode> <number>` wagers 10–500 playable Gold on a six-sided die, in multiples of 5. Payouts are fair: exact number pays 6x total; avoiding a number pays 1.2x total. These are fictional points only; no purchases or cash-out.
+- `/dice <bet> <mode> <number>` wagers any non-negative amount of playable Gold on a six-sided die, in multiples of 5; a 0-Gold bet is a free roll. Payouts are fair: exact number pays 6x total; avoiding a number pays 1.2x total. These are fictional points only; no purchases or cash-out.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
 🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.

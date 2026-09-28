@@ -4,13 +4,16 @@ const { payoutFor } = require("../src/economy");
 const { open } = require("../src/db");
 
 test("dice payouts are fair for both choices and include the returned stake", () => {
+    assert.equal(payoutFor(0, "exact"), 0);
+    assert.equal(payoutFor(0, "avoid"), 0);
     assert.equal(payoutFor(100, "exact"), 600);
     assert.equal(payoutFor(100, "avoid"), 120);
     assert.equal(payoutFor(10, "avoid"), 12);
     assert.equal((payoutFor(100, "exact") - 100) / 6 - (5 * 100) / 6, 0);
     assert.equal((5 * (payoutFor(100, "avoid") - 100)) / 6 - 100 / 6, 0);
-    assert.throws(() => payoutFor(0, "exact"), RangeError);
+    assert.throws(() => payoutFor(-5, "exact"), RangeError);
     assert.throws(() => payoutFor(12, "avoid"), /multiple of 5/);
+    assert.throws(() => payoutFor(Number.MAX_SAFE_INTEGER - 1, "exact"), /safe payout range/);
     assert.throws(() => payoutFor(100, "unknown"), RangeError);
 });
 

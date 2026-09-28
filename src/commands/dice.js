@@ -1,14 +1,13 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const { payoutFor, rollDie } = require("../economy");
 
-const MIN_BET = 10;
-const MAX_BET = 500;
+const MIN_BET = 0;
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("dice")
         .setDescription("Bet playable Gold on a six-sided die")
-        .addIntegerOption((o) => o.setName("bet").setDescription(`Gold to wager (${MIN_BET}–${MAX_BET})`).setRequired(true).setMinValue(MIN_BET).setMaxValue(MAX_BET))
+        .addIntegerOption((o) => o.setName("bet").setDescription("Gold to wager").setRequired(true).setMinValue(MIN_BET))
         .addStringOption((o) => o.setName("mode").setDescription("Choose an exact roll or a number to avoid").setRequired(true)
             .addChoices({ name: "Exact number (1 in 6; 6x total payout)", value: "exact" }, { name: "Avoid this number (5 in 6; 1.2x total payout)", value: "avoid" }))
         .addIntegerOption((o) => o.setName("number").setDescription("Pick a number from 1 to 6").setRequired(true).setMinValue(1).setMaxValue(6)),
@@ -46,11 +45,13 @@ module.exports = {
         }
         const won = result.won;
         const net = result.payout - bet;
-        const explanation = won
-            ? `Won **${result.payout.toLocaleString()} Gold total** (net +${net.toLocaleString()}).`
-            : `Lost **${bet.toLocaleString()} Gold**.`;
+        const explanation = bet === 0
+            ? "Free roll; no Gold wagered."
+            : won
+              ? `Won **${result.payout.toLocaleString()} Gold total** (net +${net.toLocaleString()}).`
+              : `Lost **${bet.toLocaleString()} Gold**.`;
         await interaction.reply({
-            content: `**${interaction.member.displayName}** bet ${bet.toLocaleString()} Gold to ${mode === "exact" ? "roll" : "avoid"} **${choice}**. Die: **${rolled}**. ${explanation}\nPlayable Gold: **${result.account.gold_balance.toLocaleString()}**.`,
+            content: `**${interaction.member.displayName}** ${bet === 0 ? "rolled" : `bet ${bet.toLocaleString()} Gold to ${mode === "exact" ? "roll" : "avoid"}`} **${choice}**. Die: **${rolled}**. ${explanation}\nPlayable Gold: **${result.account.gold_balance.toLocaleString()}**.`,
             allowedMentions: { parse: [] },
         });
     },
