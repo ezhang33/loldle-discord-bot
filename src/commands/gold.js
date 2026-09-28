@@ -45,9 +45,9 @@ module.exports = {
                 .setColor(0xc89b3c)
                 .setTitle(subject.id === actorId ? "Your Gold" : `${subject.username}'s Gold`)
                 .addFields(
-                    { name: "Gold available to play", value: account.gold_balance.toLocaleString(), inline: true },
-                    { name: "Bank", value: account.bank_balance.toLocaleString(), inline: true },
-                    { name: "Net balance", value: (account.gold_balance + account.bank_balance).toLocaleString(), inline: true }
+                    { name: "🎲 Playable Gold", value: `${account.gold_balance.toLocaleString()}`, inline: true },
+                    { name: "🏦 Bank", value: `${account.bank_balance.toLocaleString()}`, inline: true },
+                    { name: "💰 Net balance", value: `${(account.gold_balance + account.bank_balance).toLocaleString()}`, inline: true }
                 )
                 .setFooter({ text: `Starting Bank: ${INITIAL_BANK} Gold · no daily top-ups · no borrowing limit` });
             await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
@@ -56,7 +56,8 @@ module.exports = {
 
         if (sub === "leaderboard") {
             const rows = client.db.goldLeaderboard(guildId, 15);
-            const lines = rows.map((r, i) => `${i + 1}. <@${r.user_id}> — **${r.total.toLocaleString()}** net (Bank ${r.bank_balance.toLocaleString()} · Gold ${r.gold_balance.toLocaleString()})`);
+            const medals = ["🥇", "🥈", "🥉"];
+            const lines = rows.map((r, i) => `${medals[i] || `**${i + 1}.**`} <@${r.user_id}> — **${r.total.toLocaleString()} Gold** net (🏦 ${r.bank_balance.toLocaleString()} · 🎲 ${r.gold_balance.toLocaleString()})`);
             const embed = new EmbedBuilder()
                 .setColor(0xc89b3c)
                 .setTitle("Gold leaderboard")
@@ -75,7 +76,7 @@ module.exports = {
             const amount = interaction.options.getInteger("amount");
             const reason = interaction.options.getString("reason");
             if (user.bot || amount === 0) {
-                await interaction.reply({ content: "Choose a human player and a non-zero adjustment.", flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: "🔴 Choose a human player and a non-zero adjustment.", flags: MessageFlags.Ephemeral });
                 return;
             }
             const [account] = client.db.goldMove({
@@ -87,7 +88,10 @@ module.exports = {
                 details: `target:${user.id};reason:${reason}`,
                 changes: [{ userId: user.id, bankDelta: amount, goldDelta: 0 }],
             });
-            await interaction.reply({ content: `Adjusted <@${user.id}>'s Bank by ${amount > 0 ? "+" : ""}${amount.toLocaleString()} Gold. Bank: **${account.bank_balance.toLocaleString()}**.`, flags: MessageFlags.Ephemeral, allowedMentions: { users: [user.id] } });
+            const adjustment = amount > 0
+                ? `🟢 Added **${amount.toLocaleString()} Gold** to <@${user.id}>'s Bank.`
+                : `🔴 Removed **${Math.abs(amount).toLocaleString()} Gold** from <@${user.id}>'s Bank.`;
+            await interaction.reply({ content: `${adjustment} Bank: **${account.bank_balance.toLocaleString()} Gold**.`, flags: MessageFlags.Ephemeral, allowedMentions: { users: [user.id] } });
             return;
         }
 
@@ -95,17 +99,17 @@ module.exports = {
             const user = interaction.options.getUser("user");
             const amount = interaction.options.getInteger("amount");
             if (user.bot || user.id === actorId) {
-                await interaction.reply({ content: "Choose another human player.", flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: "🔴 Choose another human player.", flags: MessageFlags.Ephemeral });
                 return;
             }
             try {
                 const [from, to] = client.db.goldTransfer({
                     id: interaction.id, guildId, actorId, fromId: actorId, toId: user.id, amount, now,
                 });
-                await interaction.reply({ content: `Transferred **${amount.toLocaleString()} Gold** to <@${user.id}>. Your Bank: **${from.bank_balance.toLocaleString()}**.`, flags: MessageFlags.Ephemeral, allowedMentions: { users: [user.id] } });
+                await interaction.reply({ content: `🟢 Transferred **${amount.toLocaleString()} Gold** to <@${user.id}>. Your Bank: **${from.bank_balance.toLocaleString()} Gold**.`, flags: MessageFlags.Ephemeral, allowedMentions: { users: [user.id] } });
                 return;
             } catch (error) {
-                await interaction.reply({ content: error.message, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: `🔴 ${error.message}`, flags: MessageFlags.Ephemeral });
                 return;
             }
         }
@@ -118,12 +122,12 @@ module.exports = {
                 details: `amount:${amount}`,
                 changes: [{ userId: actorId, bankDelta: -amount, goldDelta: amount }],
             });
-            await interaction.reply({ content: `Moved **${amount.toLocaleString()} Gold** into your playable stack. Gold: **${updated.gold_balance.toLocaleString()}** · Bank: **${updated.bank_balance.toLocaleString()}**.`, flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: `🟢 Moved **${amount.toLocaleString()} Gold** into your playable stack. Gold: **${updated.gold_balance.toLocaleString()} Gold** · Bank: **${updated.bank_balance.toLocaleString()} Gold**.`, flags: MessageFlags.Ephemeral });
             return;
         }
         if (sub === "cashout") {
             if (account.gold_balance < amount) {
-                await interaction.reply({ content: `You only have **${account.gold_balance.toLocaleString()} playable Gold**.`, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: `🔴 You only have **${account.gold_balance.toLocaleString()} playable Gold**.`, flags: MessageFlags.Ephemeral });
                 return;
             }
             const [updated] = client.db.goldMove({
@@ -131,7 +135,7 @@ module.exports = {
                 details: `amount:${amount}`,
                 changes: [{ userId: actorId, bankDelta: amount, goldDelta: -amount }],
             });
-            await interaction.reply({ content: `Cashed out **${amount.toLocaleString()} Gold**. Gold: **${updated.gold_balance.toLocaleString()}** · Bank: **${updated.bank_balance.toLocaleString()}**.`, flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: `🟢 Cashed out **${amount.toLocaleString()} Gold**. Gold: **${updated.gold_balance.toLocaleString()} Gold** · Bank: **${updated.bank_balance.toLocaleString()} Gold**.`, flags: MessageFlags.Ephemeral });
         }
     },
 };

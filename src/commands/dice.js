@@ -1,14 +1,15 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require("discord.js");
 const { payoutFor, rollDie } = require("../economy");
 
 const MIN_BET = 0;
+const DIE_FACES = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"];
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("dice")
-        .setDescription("Bet playable Gold on a six-sided die")
+        .setDescription("Guess a die result and wager playable Gold")
         .addIntegerOption((o) => o.setName("bet").setDescription("Gold to wager").setRequired(true).setMinValue(MIN_BET))
-        .addStringOption((o) => o.setName("mode").setDescription("Choose an exact roll or a number to avoid").setRequired(true)
+        .addStringOption((o) => o.setName("mode").setDescription("Guess exactly or pick a number to avoid").setRequired(true)
             .addChoices({ name: "Exact number (1 in 6; 6x total payout)", value: "exact" }, { name: "Avoid this number (5 in 6; 1.2x total payout)", value: "avoid" }))
         .addIntegerOption((o) => o.setName("number").setDescription("Pick a number from 1 to 6").setRequired(true).setMinValue(1).setMaxValue(6)),
 
@@ -43,16 +44,21 @@ module.exports = {
             await interaction.reply({ content: "That dice bet was already settled.", flags: MessageFlags.Ephemeral });
             return;
         }
-        const won = result.won;
+
         const net = result.payout - bet;
-        const explanation = bet === 0
-            ? "Free roll; no Gold wagered."
-            : won
-              ? `Won **${result.payout.toLocaleString()} Gold total** (net +${net.toLocaleString()}).`
-              : `Lost **${bet.toLocaleString()} Gold**.`;
-        await interaction.reply({
-            content: `**${interaction.member.displayName}** ${bet === 0 ? "rolled" : `bet ${bet.toLocaleString()} Gold to ${mode === "exact" ? "roll" : "avoid"}`} **${choice}**. Die: **${rolled}**. ${explanation}\nPlayable Gold: **${result.account.gold_balance.toLocaleString()}**.`,
-            allowedMentions: { parse: [] },
-        });
+        const guess = mode === "exact" ? `to guess **${choice}**` : `to guess it won't be **${choice}**`;
+        const outcome = bet === 0
+            ? "⚪ Free roll — no Gold wagered."
+            : result.won
+              ? `🟢 Won **${net.toLocaleString()} Gold** profit (${result.payout.toLocaleString()} returned including stake).`
+              : `🔴 Lost **${bet.toLocaleString()} Gold**.`;
+        const color = bet === 0 ? 0x808080 : result.won ? 0x2ecc71 : 0xe74c3c;
+        const embed = new EmbedBuilder()
+            .setColor(color)
+            .setDescription(
+                `🎲 **${interaction.member.displayName}** bet ${bet.toLocaleString()} Gold ${guess}. Die: ${DIE_FACES[rolled - 1]}.\n${outcome}\n\nPlayable Gold: **${result.account.gold_balance.toLocaleString()}**.`
+            );
+
+        await interaction.reply({ embeds: [embed], allowedMentions: { parse: [] } });
     },
 };
