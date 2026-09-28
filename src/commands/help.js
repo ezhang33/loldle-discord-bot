@@ -21,7 +21,8 @@ module.exports = {
                         "`/giveup` — reveal the answer; counts as a miss for the day",
                         "`/leaderboard [period]` — today, last 7 days, or all time",
                         "`/stats [player]` — averages, streaks, and guess distribution",
-                        "`/neeko as <user> <message>` — shapeshift: post as another member (`/neeko undo` to delete; react 🦎 to unmask)",
+                        "`/gold balance` — check playable Gold and your Bank; `/gold borrow` and `/gold cashout` move between them",
+                        "`/dice` — wager playable Gold on a die roll; `/gold leaderboard` shows net balances",
                     ].join("\n"),
                 },
                 {

@@ -23,12 +23,11 @@ competes on a leaderboard — like the Wordle app, but for League.
   with `z-ai/glm-5.3-flash`). Requires the **Message Content Intent** toggled
   on in the Developer Portal. Per-user and daily caps are configurable.
 - `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
-- `/neeko as <user> <message>` — post a message wearing another member's name
-  and avatar (through a channel webhook; Discord still shows an APP badge).
-  Open to everyone: no pings, every use logged.
-  `/neeko undo` deletes your last one; react 🦎 to a message (or use
-  `/neeko reveal <message id>`) to unmask it publicly; `/neeko log` (owner only) lists recent activity. Needs the
-  **Manage Webhooks** permission.
+- `/gold balance` — private view of playable Gold, Bank, and net balance. New players start with 1,000 Gold in Bank; no daily top-ups.
+- `/gold borrow <amount>` moves Bank into playable Gold. Bank can go negative with no borrowing limit. `/gold cashout <amount>` moves Gold back into Bank.
+- `/gold transfer <user> <amount>` sends positive Bank balance to another player. `/gold adjust <user> <amount> <reason>` is owner-only and changes a player's Bank (negative amounts subtract).
+- `/gold leaderboard` ranks Bank plus playable Gold.
+- `/dice <bet> <mode> <number>` wagers 10–500 playable Gold on a six-sided die, in multiples of 5. Payouts are fair: exact number pays 6x total; avoiding a number pays 1.2x total. These are fictional points only; no purchases or cash-out.
 
 Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
 🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.
@@ -45,7 +44,7 @@ Requires Node.js 22.13 or newer.
    Information** copy the Application ID.
 2. Invite the bot: **OAuth2 → URL Generator**, scopes `bot` and
    `applications.commands`, bot permissions **View Channels**, **Send
-   Messages**, and **Manage Webhooks** (for `/neeko`). Open the generated URL and pick your server.
+   Messages**. Open the generated URL and pick your server.
 3. Configure and run:
 
    ```bash
