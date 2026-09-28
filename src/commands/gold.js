@@ -7,7 +7,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("gold")
         .setDescription("Manage your server Gold")
-        .addSubcommand((s) => s.setName("balance").setDescription("Check your Bank and playable Gold"))
+        .addSubcommand((s) =>
+            s.setName("balance").setDescription("Check your Bank and playable Gold")
+                .addUserOption((o) => o.setName("user").setDescription("Check another player's balance"))
+        )
         .addSubcommand((s) =>
             s.setName("borrow").setDescription("Move Gold from your Bank into your playable stack (Bank can go negative)")
                 .addIntegerOption((o) => o.setName("amount").setDescription("Amount to move into play").setRequired(true).setMinValue(1).setMaxValue(MAX_ACTION))
@@ -36,10 +39,11 @@ module.exports = {
         const now = Date.now();
 
         if (sub === "balance") {
-            const account = client.db.goldAccount(guildId, actorId, now);
+            const subject = interaction.options.getUser("user") || interaction.user;
+            const account = client.db.goldAccount(guildId, subject.id, now);
             const embed = new EmbedBuilder()
                 .setColor(0xc89b3c)
-                .setTitle("Your Gold")
+                .setTitle(subject.id === actorId ? "Your Gold" : `${subject.username}'s Gold`)
                 .addFields(
                     { name: "Gold available to play", value: account.gold_balance.toLocaleString(), inline: true },
                     { name: "Bank", value: account.bank_balance.toLocaleString(), inline: true },

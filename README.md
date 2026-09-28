@@ -23,7 +23,7 @@ competes on a leaderboard — like the Wordle app, but for League.
   with `z-ai/glm-5.3-flash`). Requires the **Message Content Intent** toggled
   on in the Developer Portal. Per-user and daily caps are configurable.
 - `/msg <message> [channel]` — owner only (see `OWNER_ID`): post a message as the bot.
-- `/gold balance` — private view of playable Gold, Bank, and net balance. New players start with 1,000 Gold in Bank; no daily top-ups.
+- `/gold balance [user]` — private view of your (or another player's) playable Gold, Bank, and net balance. New players start with 1,000 Gold in Bank; no daily top-ups.
 - `/gold borrow <amount>` moves Bank into playable Gold. Bank can go negative with no borrowing limit. `/gold cashout <amount>` moves Gold back into Bank.
 - `/gold transfer <user> <amount>` sends positive Bank balance to another player. `/gold adjust <user> <amount> <reason>` is owner-only and changes a player's Bank (negative amounts subtract).
 - `/gold leaderboard` ranks Bank plus playable Gold.
