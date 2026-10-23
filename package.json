@@ -2,7 +2,7 @@
   "name": "loldle-discord-bot",
   "version": "1.0.0",
   "private": true,
-  "description": "A shared daily LoLdle (League of Legends champion guessing game) with leaderboards for your Discord server",
+  "description": "Shared daily LoLdle and Pokédle-inspired games with generation-range leaderboards for Discord",
   "main": "src/bot.js",
   "scripts": {
     "start": "node src/bot.js",

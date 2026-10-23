@@ -8,16 +8,18 @@ module.exports = {
     async execute(interaction, client) {
         const embed = new EmbedBuilder()
             .setColor(0xc89b3c)
-            .setTitle("How to play LoLdle")
+            .setTitle("Games in this server")
             .setDescription(
-                "Everyone in the server gets the **same champion** each day. Guess it in as few tries as you can — " +
-                    "your guesses are only visible to you, and the channel is told when you finish."
+                "Play LoLdle or Pokédle with private guesses and shared daily answers. LoLdle has one answer per server; Pokédle has one answer per generation range."
             )
             .addFields(
                 {
                     name: "Commands",
                     value: [
-                        "`/guess <champion>` — make a guess (autocomplete helps with spelling)",
+                        "`/guess <champion>` — LoLdle guess (autocomplete helps with spelling)",
+                        "`/pokedle range [from] [to]` — view or set your inclusive Gen 1–9 range (default Gen 1–9)",
+                        "`/pokedle guess <Pokémon>` — guess today's Pokémon; same answer for everyone in your range",
+                        "`/pokedle giveup`, `/pokedle leaderboard [period]`, `/pokedle stats [player]`",
                         "`/giveup` — reveal the answer; counts as a miss for the day",
                         "`/leaderboard [period]` — today, last 7 days, or all time",
                         "`/stats [player]` — averages, streaks, and guess distribution",

@@ -1,8 +1,6 @@
 # LoLdle Discord Bot
 
-A shared daily [LoLdle](https://loldle.net) for your Discord server. Everyone
-gets the same League of Legends champion each day, guesses privately, and
-competes on a leaderboard — like the Wordle app, but for League.
+A shared daily [LoLdle](https://loldle.net) and Pokédle-inspired Pokémon guessing game for your Discord server. LoLdle shares one League champion per server/day; Pokédle shares one Pokémon per server/day/generation range. Guesses are private, with separate stats and leaderboards.
 
 ## How it works
 
@@ -16,6 +14,8 @@ competes on a leaderboard — like the Wordle app, but for League.
   then average guesses.
 - `/stats [player]` — solve rate, averages, streaks, guess distribution.
 - `/help`, `/ping`.
+- `/pokedle range [from] [to]` — choose an inclusive generation range (Gen 1–9; defaults to all generations). Each user saves their own range; all users in a server with the same range get the same Pokémon each day.
+- `/pokedle guess <pokemon>`, `/pokedle giveup`, `/pokedle leaderboard [today|week|alltime]`, `/pokedle stats [player]` — Pokémon daily game, separate from LoLdle and ranked within your selected range.
 - **@mention chatbot** — ping the bot (or reply to it) and it answers in a
   Faker persona, with the last few channel messages as context and any
   attached images if the model supports vision. Off unless `CHAT_API_KEY` is
@@ -29,8 +29,9 @@ competes on a leaderboard — like the Wordle app, but for League.
 - `/gold leaderboard` ranks Bank plus playable Gold.
 - `/dice <bet> <mode> <number>` wagers any non-negative amount of playable Gold on a six-sided die, in multiples of 5; a 0-Gold bet is a free roll. Payouts are fair: exact number pays 6x total; avoiding a number pays 1.2x total. These are fictional points only; no purchases or cash-out.
 
-Clue columns, in order: Gender · Position · Species · Resource · Range · Region · Year.
-🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer was released later/earlier.
+LoLdle clues: Gender · Position · Species · Resource · Range · Region · Year.
+Pokédle clues: Generation · Type · Color · Habitat · Shape · Height · Weight · Legendary/Mythical.
+🟩 exact · 🟧 partial (for list attributes) · 🟥 none · ⬆️/⬇️ answer is numerically higher/lower.
 
 Results are stored in a SQLite database (Node's built-in `node:sqlite`), so
 nothing is lost on restart.
@@ -87,13 +88,18 @@ npm test
 Layout:
 
 - `src/champions.js` — champion data, lookup/autocomplete, clue comparison
+- `src/pokemon.js` — Pokémon data, generation filtering, lookup, clue comparison
+- `src/pokedleGame.js` — Pokédle answer selection and range-specific game logic
 - `src/daily.js` — day keys, rollover timing, deterministic daily pick
 - `src/game.js` — rules and ranking (no Discord code)
 - `src/db.js` — SQLite storage
 - `src/commands/`, `src/events/` — the Discord layer
 
 `championData.json` is inherited from the original project and currently
-stops at 2022 releases; refreshing it is a known follow-up.
+stops at 2022 releases; refreshing it is a known follow-up. `pokemonData.json`
+contains the 1,025 default Pokémon species from the [PokeAPI CSV dataset](https://github.com/PokeAPI/pokeapi/tree/2bf639e5572812a67d2b94903fdcb9d095f5aeb2/data/v2/csv)
+(Gen I–IX); size values are converted from decimeters/hectograms for display.
+Pokémon names and game data are associated with Nintendo/Game Freak; this is an unofficial fan project, not affiliated with or endorsed by them.
 
 ## Credits
 

@@ -33,6 +33,50 @@ CREATE TABLE IF NOT EXISTS guesses (
     PRIMARY KEY (guild_id, day, user_id, n)
 );
 
+CREATE TABLE IF NOT EXISTS pokedle_answers (
+    guild_id  TEXT    NOT NULL,
+    day       TEXT    NOT NULL,
+    gen_from  INTEGER NOT NULL,
+    gen_to    INTEGER NOT NULL,
+    pokemon_id INTEGER NOT NULL,
+    PRIMARY KEY (guild_id, day, gen_from, gen_to)
+);
+
+CREATE TABLE IF NOT EXISTS pokedle_ranges (
+    guild_id   TEXT    NOT NULL,
+    user_id    TEXT    NOT NULL,
+    gen_from   INTEGER NOT NULL DEFAULT 1 CHECK (gen_from BETWEEN 1 AND 9),
+    gen_to     INTEGER NOT NULL DEFAULT 9 CHECK (gen_to BETWEEN 1 AND 9),
+    updated_at INTEGER NOT NULL,
+    CHECK (gen_from <= gen_to),
+    PRIMARY KEY (guild_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS pokedle_games (
+    guild_id    TEXT    NOT NULL,
+    day         TEXT    NOT NULL,
+    gen_from    INTEGER NOT NULL,
+    gen_to      INTEGER NOT NULL,
+    user_id     TEXT    NOT NULL,
+    guesses     INTEGER NOT NULL DEFAULT 0,
+    status      TEXT    NOT NULL DEFAULT 'playing',
+    started_at  INTEGER NOT NULL,
+    finished_at INTEGER,
+    PRIMARY KEY (guild_id, day, gen_from, gen_to, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS pokedle_guesses (
+    guild_id   TEXT    NOT NULL,
+    day        TEXT    NOT NULL,
+    gen_from   INTEGER NOT NULL,
+    gen_to     INTEGER NOT NULL,
+    user_id    TEXT    NOT NULL,
+    n          INTEGER NOT NULL,
+    pokemon_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (guild_id, day, gen_from, gen_to, user_id, n)
+);
+
 CREATE TABLE IF NOT EXISTS gold_accounts (
     guild_id      TEXT    NOT NULL,
     user_id       TEXT    NOT NULL,
@@ -88,6 +132,18 @@ function open(dbPath) {
         guessesFor: db.prepare("SELECT n, champion FROM guesses WHERE guild_id = ? AND day = ? AND user_id = ? ORDER BY n"),
         dayGames: db.prepare("SELECT * FROM games WHERE guild_id = ? AND day = ?"),
         userGames: db.prepare("SELECT * FROM games WHERE guild_id = ? AND user_id = ? AND status != 'playing' ORDER BY day"),
+        pokedleRange: db.prepare("SELECT gen_from, gen_to FROM pokedle_ranges WHERE guild_id = ? AND user_id = ?"),
+        setPokedleRange: db.prepare("INSERT INTO pokedle_ranges (guild_id, user_id, gen_from, gen_to, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(guild_id, user_id) DO UPDATE SET gen_from=excluded.gen_from, gen_to=excluded.gen_to, updated_at=excluded.updated_at"),
+        pokedleAnswer: db.prepare("SELECT pokemon_id FROM pokedle_answers WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ?"),
+        setPokedleAnswer: db.prepare("INSERT OR IGNORE INTO pokedle_answers (guild_id, day, gen_from, gen_to, pokemon_id) VALUES (?, ?, ?, ?, ?)"),
+        pokedleGame: db.prepare("SELECT * FROM pokedle_games WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ? AND user_id = ?"),
+        startPokedleGame: db.prepare("INSERT INTO pokedle_games (guild_id, day, gen_from, gen_to, user_id, started_at) VALUES (?, ?, ?, ?, ?, ?)"),
+        addPokedleGuess: db.prepare("INSERT INTO pokedle_guesses (guild_id, day, gen_from, gen_to, user_id, n, pokemon_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+        bumpPokedleGuesses: db.prepare("UPDATE pokedle_games SET guesses = guesses + 1 WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ? AND user_id = ?"),
+        finishPokedleGame: db.prepare("UPDATE pokedle_games SET status = ?, finished_at = ? WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ? AND user_id = ?"),
+        pokedleGuesses: db.prepare("SELECT n, pokemon_id FROM pokedle_guesses WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ? AND user_id = ? ORDER BY n"),
+        pokedleDayGames: db.prepare("SELECT * FROM pokedle_games WHERE guild_id = ? AND day = ? AND gen_from = ? AND gen_to = ?"),
+        pokedleUserGames: db.prepare("SELECT * FROM pokedle_games WHERE guild_id = ? AND user_id = ? AND gen_from = ? AND gen_to = ? AND status != 'playing' ORDER BY day"),
         goldAccount: db.prepare("SELECT * FROM gold_accounts WHERE guild_id = ? AND user_id = ?"),
         insertGoldAccount: db.prepare("INSERT OR IGNORE INTO gold_accounts (guild_id, user_id, bank_balance, gold_balance, created_at, updated_at) VALUES (?, ?, 1000, 0, ?, ?)"),
         updateGoldAccount: db.prepare("UPDATE gold_accounts SET bank_balance = ?, gold_balance = ?, updated_at = ? WHERE guild_id = ? AND user_id = ?"),
@@ -181,6 +237,49 @@ function open(dbPath) {
         },
         userGames(guildId, userId) {
             return stmts.userGames.all(guildId, userId);
+        },
+        pokedleRange(guildId, userId) {
+            return stmts.pokedleRange.get(guildId, userId) || { gen_from: 1, gen_to: 9 };
+        },
+        setPokedleRange(guildId, userId, genFrom, genTo, now = Date.now()) {
+            stmts.setPokedleRange.run(guildId, userId, genFrom, genTo, now);
+        },
+        pokedleAnswerFor(guildId, day, genFrom, genTo, fallbackPokemonId) {
+            stmts.setPokedleAnswer.run(guildId, day, genFrom, genTo, fallbackPokemonId);
+            return stmts.pokedleAnswer.get(guildId, day, genFrom, genTo).pokemon_id;
+        },
+        getPokedleGame(guildId, day, genFrom, genTo, userId) {
+            return stmts.pokedleGame.get(guildId, day, genFrom, genTo, userId) || null;
+        },
+        startPokedleGame(guildId, day, genFrom, genTo, userId, now) {
+            stmts.startPokedleGame.run(guildId, day, genFrom, genTo, userId, now);
+            return stmts.pokedleGame.get(guildId, day, genFrom, genTo, userId);
+        },
+        recordPokedleGuess(guildId, day, genFrom, genTo, userId, n, pokemonId, now) {
+            stmts.addPokedleGuess.run(guildId, day, genFrom, genTo, userId, n, pokemonId, now);
+            stmts.bumpPokedleGuesses.run(guildId, day, genFrom, genTo, userId);
+        },
+        finishPokedleGame(guildId, day, genFrom, genTo, userId, status, now) {
+            stmts.finishPokedleGame.run(status, now, guildId, day, genFrom, genTo, userId);
+        },
+        pokedleGuesses(guildId, day, genFrom, genTo, userId) {
+            return stmts.pokedleGuesses.all(guildId, day, genFrom, genTo, userId);
+        },
+        pokedleDayGames(guildId, day, genFrom, genTo) {
+            return stmts.pokedleDayGames.all(guildId, day, genFrom, genTo);
+        },
+        pokedleGamesInDays(guildId, days, genFrom, genTo) {
+            if (days.length === 0) return [];
+            const placeholders = days.map(() => "?").join(",");
+            return db.prepare(`SELECT * FROM pokedle_games WHERE guild_id = ? AND gen_from = ? AND gen_to = ? AND status != 'playing' AND day IN (${placeholders})`)
+                .all(guildId, genFrom, genTo, ...days);
+        },
+        allPokedleFinishedGames(guildId, genFrom, genTo) {
+            return db.prepare("SELECT * FROM pokedle_games WHERE guild_id = ? AND gen_from = ? AND gen_to = ? AND status != 'playing'")
+                .all(guildId, genFrom, genTo);
+        },
+        pokedleUserGames(guildId, userId, genFrom, genTo) {
+            return stmts.pokedleUserGames.all(guildId, userId, genFrom, genTo);
         },
         goldAccount(guildId, userId, now = Date.now()) {
             return transaction(() => ensureGoldAccount(guildId, userId, now));
